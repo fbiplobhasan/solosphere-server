@@ -1,0 +1,43 @@
+
+    সার্ভার সাইড কোড
+============================================
+
+ডিবি কালেকশন ডিফাইন
+    const db = client.db('solos-db')
+    const jobsCollection = db.collection('jobs')
+
+ইনসার্ট এ ডাটা
+    // save a jobData in db
+      app.post('/add-job', async (req, res) => {
+      const jobData = req.body;
+      const result = await jobsCollection.insertOne(jobData);
+      res.send(result);
+      })
+
+    ক্লায়েন্ট সাইড
+    // make a post req with axios
+       const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/add-job`,
+       job_describe
+       );
+       console.log(data);
+==========================================
+
+       গেট অল ডাটা
+
+app.get('/jobs', async (req,res) => {
+    const result = await jobsCollection.find().toArray()
+    res.send(result);
+})
+
+ক্লায়েন্ট সাইড
+const [jobs, setJobs] = useState([]);
+  useEffect(() => {
+    fetchAllJobs();
+  }, []);
+  const fetchAllJobs = async () => {
+    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/jobs`);
+    setJobs(data);
+  };
+  console.log(jobs);
+=========================================
