@@ -7,6 +7,7 @@
     const jobsCollection = db.collection('jobs')
 
 ইনসার্ট এ ডাটা
+সার্ভার সাইড কোড
     // save a jobData in db
       app.post('/add-job', async (req, res) => {
       const jobData = req.body;
@@ -24,6 +25,7 @@
 ==========================================
 
        গেট অল ডাটা
+       সার্ভার সাইড কোড
 
 app.get('/jobs', async (req,res) => {
     const result = await jobsCollection.find().toArray()
@@ -41,3 +43,91 @@ const [jobs, setJobs] = useState([]);
   };
   console.log(jobs);
 =========================================
+
+ইউজারের ইমেইল এবং পোস্টেড জবস্ এর ইমেইল এক হলে দেখাবে
+সার্ভার সাইড কোড
+// get all jobs posted by a specific user
+    app.get('/jobs/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { 'buyer.email': email }
+      const result = await jobsCollection.find(query).toArray()
+      res.send(result);
+    })
+
+ক্লায়েন্ট সাইড
+    const [jobs, setJobs] = useState([]);
+  useEffect(() => {
+    fetchAllJobs();
+  }, [user]);
+  const fetchAllJobs = async () => {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/jobs/${user?.email}`
+    );
+    setJobs(data);
+  };
+  ============================================================
+সার্ভার সাইড কোড
+  // Delete specific one id from server side code
+    app.delete('/job/:id', async (req,res) => {
+     const id = req.params.id;
+     const query = {_id: new ObjectId (id)}
+     const result = await jobsCollection.deleteOne(query)
+     res.send(result); 
+    })
+    ক্লায়েন্ট সাইড
+      const handleDelete = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/job/${id}`
+      );
+      toast.success("Deleted successfully.");
+      fetchAllJobs();
+      console.log(handleDelete);
+    } catch (err) {
+      toast.error(err.message);
+      console.log(err);
+    }
+  };
+   =========================================================
+    সার্ভার সাইড কোড => findOne
+    / get a signle data from db
+    app.get('/job/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    })
+   ক্লায়েন্ট সাইড
+    const [job, setJob] = useState([]);
+    useEffect(() => {
+    fetchAllJobs();
+  }, []);
+    const fetchAllJobs = async () => {
+    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/job/${id}`);
+    setJob(data);
+  };
+  ======================================================
+
+আাপডেট জব ডাটা
+ক্লায়েন্ট সাইড
+  const fetchJobData = async () => {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/job/${id}`
+    );
+    setJob(data);
+    setStartDate(new Date (data.deadline))
+  };
+  সার্ভার সাইড
+  // update a jobData in db
+    app.put('/update-job/:id', async (req, res) => {
+      const id = req.params.id;
+      const jobData = req.body;
+      const updatedData = {
+        $set: jobData,
+      }
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true }
+      const result = await jobsCollection.updateOne(query, updatedData, option);
+      res.send(result);
+    })
+    =====================================================

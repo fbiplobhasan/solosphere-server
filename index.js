@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 require('dotenv').config()
 
 const port = process.env.PORT || 9000
@@ -38,6 +38,43 @@ async function run() {
       const result = await jobsCollection.find().toArray()
       res.send(result);
     });
+
+    // get all jobs posted by a specific user
+    app.get('/jobs/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { 'buyer.email': email }
+      const result = await jobsCollection.find(query).toArray()
+      res.send(result);
+    })
+
+    // Delete specific one id from server side code
+    app.delete('/job/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.deleteOne(query)
+      res.send(result);
+    })
+
+    // get a signle data from db
+    app.get('/job/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    })
+
+    // update a jobData in db
+    app.put('/update-job/:id', async (req, res) => {
+      const id = req.params.id;
+      const jobData = req.body;
+      const updatedData = {
+        $set: jobData,
+      }
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true }
+      const result = await jobsCollection.updateOne(query, updatedData, option);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 })
