@@ -120,7 +120,7 @@ async function run() {
     // update bid status
     app.patch('/bid-status-update/:id', async (req, res) => {
       const id = req.params.id;
-      const {status} = req.body;
+      const { status } = req.body;
       const filter = { _id: new ObjectId(id) };
       const updated = {
         $set: { status },
@@ -130,6 +130,17 @@ async function run() {
       res.send(result);
     })
 
+    // get all jobs
+    app.get('/all-jobs', async (req, res) => {
+      const filter = req.query.filter;
+      const search = req.query.search;
+      let query = {title:{
+        $regex: search, $options: "i",
+      }};
+      if(filter) query.category = filter;
+      const result = await jobsCollection.find(query).toArray();
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 })
     console.log(
